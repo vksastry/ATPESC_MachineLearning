@@ -65,7 +65,7 @@ arrival.
 
 ```mermaid
 flowchart LR
-    A["🛠️ Set up the SDK<br/>(cslc on PATH)"] --> C["🎨 Hands-on: 2-PE GEMV<br/>wire the missing colors"]
+    A["🛠️ Set up the SDK<br/>(cslc on PATH)"] --> C["🎨 Hands-on: 2×2 GEMV<br/>wire the 8 colors"]
     C --> D["▶️ Compile + simulate<br/>bash commands_wse3.sh"]
     D --> E["✅ SUCCESS!"]
     classDef good fill:#e3f9e5,stroke:#00aa00,color:#006600
@@ -99,115 +99,121 @@ cslc --help
 
 ---
 
-## 🎨 Hands-on: GEMV on 2 PEs — wire the colors
+## 🎨 Hands-on: GEMV on a 2×2 tile — wire the colors
 
-![Difficulty](https://img.shields.io/badge/difficulty-beginner-brightgreen)
+![Difficulty](https://img.shields.io/badge/difficulty-intermediate-orange)
 ![Time](https://img.shields.io/badge/time-~30%20min-informational)
-![Concept](https://img.shields.io/badge/concept-colors%20%26%20routing-e91e63)
+![Concept](https://img.shields.io/badge/concept-2%20colors%20%C2%B7%20broadcast%20%2B%20reduce-e91e63)
 
-📂 Files for this exercise are in **[`two-pe-gemv/`](./two-pe-gemv/)** (`starter/` = your task, `solution/` = answer key).
+📂 Files: **[`gemv-2x2/`](./gemv-2x2/)** — `starter/` = your task, `solution/` = answer key.
+📖 Optional deep dive: **[`PE_PROGRAM_WALKTHROUGH.md`](./gemv-2x2/PE_PROGRAM_WALKTHROUGH.md)** — the device code, line by line.
 
 ### The problem
 
-Compute `y = A·x + b` where `A` is `4×6`. We split `A` by **columns** across two PEs: each computes
-half of `A·x`, and the **left PE sends its partial result to the right PE**, which adds it in. That
-single hand-off is the whole lesson. 🎯
+Compute `y = A·x + b` where `A` is `4×6`, now spread across a **2×2 grid**. `A` splits into four
+**quadrants** (one per PE), `x` is handed to the **top row**, and `b` is staged in the **left column**.
+The final `y` lands in the **right column**, where the host reads it back.
 
-```mermaid
-flowchart LR
-    H1["🖥️ host<br/>A, x, b"] -. load .-> L
-    subgraph L["🟦 PE (0,0) — LEFT"]
-        LC["y_L = A[:,0:3]·x"]
-    end
-    subgraph R["🟩 PE (1,0) — RIGHT"]
-        RC["y = A[:,3:6]·x + y_L + b"]
-    end
-    L == "send_color 🎨" ==> R
-    R -. read y .-> H2["🖥️ host<br/>final y"]
+```
+        x[0:3]                    x[3:6]         <- host loads x into the TOP ROW only
+           |                         |
+     +-----v------+   ax_color   +-----v------+
+ b ->| PE(0,0) NW | -- reduce -> | PE(1,0) NE | -> y[0:2]   (rows 0-1)
+     |  y += A·x  |    EAST      |  + partial |
+     +-----+------+              +-----+------+
+  x_color  | SOUTH           x_color  | SOUTH
+     +-----v------+   ax_color   +-----v------+
+ b ->| PE(0,1) SW | -- reduce -> | PE(1,1) SE | -> y[2:4]   (rows 2-3)
+     |  y += A·x  |    EAST      |  + partial |
+     +------------+              +------------+
+
+  x_color  = BROADCAST  x  down SOUTH   (top row feeds the bottom row)
+  ax_color = REDUCE     y  toward EAST  (left column sums into the right column)
 ```
 
-### 🎨 Colors in 60 seconds
+Two phases, and this time **two colors**:
+- **`x_color` broadcasts `x` SOUTH**, so both PEs in a column can multiply their quadrant.
+- **`ax_color` reduces the partial results EAST**, adding left + right into the final `y`.
+
+> 🎬 Want to watch it happen? An [**interactive dataflow animation**](https://claude.ai/code/artifact/c62a8928-3b26-48c0-b930-36287f7d7bdf) steps through host → broadcast → multiply → reduce → readback with the real numbers.
+
+### 🎨 The two colors
+
+```csl
+const ax_color: color = @get_color(0); // REDUCE:    partial y flows EAST
+const x_color:  color = @get_color(1); // BROADCAST: x flows SOUTH
+```
 
 > [!IMPORTANT]
-> A **color** is a hardware **routing channel** — a wire threaded through the PEs. To make a value
-> travel, each PE gives that color a **route** with two parts:
-> - **`.rx`** — where a wavelet **comes in from**
-> - **`.tx`** — where it **goes out to**
->
-> Directions are **`RAMP`** (in/out of *this* PE's compute core) and the compass **`EAST` / `WEST` /
-> `NORTH` / `SOUTH`** (to a neighbor). **Same color, different route on each PE.**
+> Recall a **color** is a routing channel, and each PE gives it a **route**: `.rx` (where wavelets come
+> in) and `.tx` (where they go out), using `RAMP` (its own core) and `EAST / WEST / NORTH / SOUTH`
+> (neighbors). Here the two colors have **opposite jobs** — one fans data *out* (broadcast), the other
+> funnels data *in* (reduce).
 
-This program declares exactly **one** color:
+### ✅ Your task — wire the 8 routes
 
-```csl
-const send_color: color = @get_color(0);   // one channel carries y_L from LEFT → RIGHT
-```
+**Everything is written** — `pe_program.csl` (the compute), `run.py` (the host), the 2×2 placement —
+**except the color routes.** Open [`gemv-2x2/starter/layout.csl`](./gemv-2x2/starter/layout.csl); each of
+the **8** `@set_color_config` calls has an `EXERCISE` comment describing that PE's role. Fill every
+`.rx`/`.tx` from `RAMP, EAST, WEST, NORTH, SOUTH`:
 
-### ✅ Your task
-
-**Everything is already written** — `pe_program.csl` (the compute), `run.py` (the host), the PE
-placement — **except the color routes.** Open [`two-pe-gemv/starter/layout.csl`](./two-pe-gemv/starter/layout.csl)
-and find the two `EXERCISE` blocks. Fill in the `???` for each PE's route on `send_color`, choosing
-from `RAMP, EAST, WEST, NORTH, SOUTH`:
-
-```csl
-// Left PE (0,0) — sends its partial result y_L toward the EAST neighbor
-@set_color_config(0, 0, send_color, .{.routes = .{ .rx = .{ ??? }, .tx = .{ ??? } }});
-
-// Right PE (1,0) — receives from the WEST, delivers into its own compute core
-@set_color_config(1, 0, send_color, .{.routes = .{ .rx = .{ ??? }, .tx = .{ ??? } }});
-```
-
-| PE | role | `.rx = .{ ? }` | `.tx = .{ ? }` |
-|----|------|:---:|:---:|
-| `(0,0)` LEFT  | **send** `y_L` to the east neighbor | ❓ | ❓ |
-| `(1,0)` RIGHT | **receive** from the west, deliver to core | ❓ | ❓ |
+| PE | color | role | `.rx` | `.tx` |
+|----|-------|------|:---:|:---:|
+| `(0,0)` NW | `ax_color` | send partial `y` east | ❓ | ❓ |
+| `(0,0)` NW | `x_color`  | originate `x` (self **+** south) | ❓ | ❓ |
+| `(1,0)` NE | `ax_color` | receive partial from west | ❓ | ❓ |
+| `(1,0)` NE | `x_color`  | originate `x` (self **+** south) | ❓ | ❓ |
+| `(0,1)` SW | `ax_color` | send partial `y` east | ❓ | ❓ |
+| `(0,1)` SW | `x_color`  | receive `x` from north | ❓ | ❓ |
+| `(1,1)` SE | `ax_color` | receive partial from west | ❓ | ❓ |
+| `(1,1)` SE | `x_color`  | receive `x` from north | ❓ | ❓ |
 
 > [!TIP]
-> Think of it as one wire: the left PE's value **leaves its core (`RAMP`) heading `EAST`**; the right
-> PE **takes it off the `WEST` link into its core (`RAMP`)**. One color, two complementary routes.
+> **The subtle one:** on the **top row**, `x_color` has **two `.tx` destinations** — `.{ RAMP, SOUTH }`.
+> `RAMP` delivers `x` back into the PE's *own* core (so it computes its quadrant), and `SOUTH` forwards
+> it to the PE below. Every other route has a single `.rx` and a single `.tx`.
 
 ### ▶️ Compile and run on the simulator
 
 ```bash
-cd two-pe-gemv/starter
+cd gemv-2x2/starter
 bash commands_wse3.sh
 ```
 
-This runs `cslc` (compile) then `cs_python run.py` (fabric simulation) and prints **`SUCCESS!`** when
-your routing is correct.
+This runs `cslc` (compile) then `cs_python run.py` (fabric simulation). Correct routing prints
+**`SUCCESS!`**, and the computed result is `y = [17, 53, 89, 125]`.
 
 ### 🚦 What you'll see
 
 | Signal | Meaning | Fix |
 |---|---|---|
-| ❌ won't compile | a `???` is still there | fill in all four routes |
-| ⏳ hangs forever | routes don't line up (e.g. both PEs "send") | the right PE waits for data that never arrives — recheck directions |
-| ✅ `SUCCESS!` | the color routes `y_L` correctly | 🎉 you wired your first fabric color |
+| ❌ won't compile | a `???` is still there | fill in all 8 routes |
+| ⏳ hangs forever | a route doesn't line up | e.g. a top-row `x_color` missing `RAMP` → that PE never receives its own `x`, never finishes, and the reduce deadlocks. Recheck directions. |
+| ✅ `SUCCESS!` | both colors route correctly | 🎉 you wired a broadcast **and** a reduce |
 
 <details>
 <summary>🔑 Stuck? Reveal the answer key</summary>
 
-| PE | `.rx` | `.tx` |
-|----|:---:|:---:|
-| `(0,0)` LEFT  | `RAMP` | `EAST` |
-| `(1,0)` RIGHT | `WEST` | `RAMP` |
+| PE | color | `.rx` | `.tx` |
+|----|-------|:---:|:---:|
+| `(0,0)` NW | `ax_color` | `RAMP`  | `EAST` |
+| `(0,0)` NW | `x_color`  | `RAMP`  | `RAMP, SOUTH` |
+| `(1,0)` NE | `ax_color` | `WEST`  | `RAMP` |
+| `(1,0)` NE | `x_color`  | `RAMP`  | `RAMP, SOUTH` |
+| `(0,1)` SW | `ax_color` | `RAMP`  | `EAST` |
+| `(0,1)` SW | `x_color`  | `NORTH` | `RAMP` |
+| `(1,1)` SE | `ax_color` | `WEST`  | `RAMP` |
+| `(1,1)` SE | `x_color`  | `NORTH` | `RAMP` |
 
-```csl
-@set_color_config(0, 0, send_color, .{.routes = .{ .rx = .{RAMP}, .tx = .{EAST} }});
-@set_color_config(1, 0, send_color, .{.routes = .{ .rx = .{WEST}, .tx = .{RAMP} }});
-```
-
-Full working program in [`two-pe-gemv/solution/`](./two-pe-gemv/solution/).
+Full working program in [`gemv-2x2/solution/`](./gemv-2x2/solution/).
 </details>
 
 ### 🧠 Takeaway
 
 - **1 PE → 0 colors.** Cross a PE boundary → you need a color.
-- A color is **one channel**; each PE gives it a **route** (`.rx`/`.tx`). Sender does `RAMP → EAST`,
-  receiver does `WEST → RAMP`.
-- **Scaling up:** a 2×2 GEMV tile needs **2** colors (one to broadcast, one to reduce); Conway's Game
-  of Life needs **8**. Same idea, more wires. 🧵
+- This tile uses **2 colors with opposite jobs**: a **broadcast** (`x_color`, fanning out via
+  `.{ RAMP, SOUTH }`) and a **reduce** (`ax_color`, `RAMP → EAST` / `WEST → RAMP`).
+- **Scaling up:** Conway's Game of Life needs **8** colors. Same idea, more wires. 🧵
 
 ---
 
