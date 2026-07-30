@@ -7,7 +7,7 @@ This directory contains hands-on material for AI Testbeds:
 
 
 
-For upto date information on AI testbeds refer to [online documentation](https://docs.alcf.anl.gov/ai-testbed/getting-started/)
+For upto date information on AI testbeds refer to [online documentation](https://docs.alcf.anl.gov/ai-testbed/)
 
 ##### Questions
 
