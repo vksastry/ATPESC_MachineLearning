@@ -3,7 +3,7 @@
 This directory contains hands-on material for AI Testbeds:
 
 * [Cerebras AI/ML](./Cerebras/ML_Training/README.md)
-* [Cerebras CSL](./Cerebras/CSL/README.md)
+* [Cerebras CSL](./Cerebras/CSL/README.MD)
 
 
 
