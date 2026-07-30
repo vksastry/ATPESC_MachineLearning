@@ -1,104 +1,201 @@
-# Getting Started with the Cerebras SDK
+# 🎨 Cerebras SDK & CSL — Programming the Wafer
 
-The following guide gives an overview of the Cerebras SDK, and installation instructions.
+![Testbed](https://img.shields.io/badge/ALCF-AI%20Testbed-0aa)
+![Chip](https://img.shields.io/badge/chip-WSE--3-blueviolet)
+![Language](https://img.shields.io/badge/language-CSL-e91e63)
+![SDK](https://img.shields.io/badge/SDK-2.10-success)
+![Mode](https://img.shields.io/badge/run-fabric%20simulator-9cf)
 
-## Introduction
+The **WSE-3** inside the Cerebras CS-3 is a nearly million-core wafer. Beyond AI, its ultra-high
+bandwidth fabric suits HPC kernels — seismic imaging, CFD, Monte Carlo particle transport, molecular
+dynamics (several Gordon Bell finalists). The **Cerebras SDK** lets you write your *own* wafer-scale
+kernels in **CSL** (Cerebras Software Language), programming individual PEs and the routing between them.
 
-The WSE-3, the chip within the Cerebras CS-3, is a massive, nearly million-core wafer. While our
-core mission is to serve the world's largest and fastest AI workloads, the ultra-high bandwidth
-memory and fabric of the WSE suits many other applications in HPC and beyond, enabling orders of
-magnitude speedup over more traditional hardware.
+> [!NOTE]
+> **You write two pieces:** (1) **device code** in CSL that runs on the PEs, and (2) **host code** in
+> Python that moves data on/off the wafer and launches functions. You'll develop and run everything on
+> the **cycle-accurate fabric simulator** — no hardware needed.
 
-For example, developers and researchers have built seismic modeling applications and fluid dynamics
-simulations at TotalEnergies and the National Energy Technology Laboratory, respectively. A
-research team at Argonne implemented a key kernel in Monte Carlo particle transport simulations.
-A 2023 Gordon Bell Finalist from KAUST used CS-2s for seismic imaging, and a 2024 Gordon Bell
-Finalist used a CS-2 for molecular dynamics simulations of metallic systems.
+---
 
-To allow external developers to write their own custom kernels and support these use cases, the
-Cerebras SDK allows users to build custom programs running at Wafer-Scale using the Cerebras
-Software Language (CSL), a low-level language for programming individual PEs and the WSE fabric.
+## 🧭 What you'll do
 
-## SDK Overview
+```mermaid
+flowchart LR
+    A["🛠️ Set up the SDK<br/>(cslc on PATH)"] --> B["📥 Get the examples"]
+    B --> C["🎨 Hands-on: 2-PE GEMV<br/>wire the missing colors"]
+    C --> D["▶️ Compile + simulate<br/>bash commands_wse3.sh"]
+    D --> E["✅ SUCCESS!"]
+    classDef good fill:#e3f9e5,stroke:#00aa00,color:#006600
+    class E good
+```
 
-Users write two components to specify their programs: (1) device code in CSL, which runs on the CS
-system, and (2) host code in Python, which uses Cerebras APIs to move data between and launch
-functions on the CS system. CSL is a low-level kernel programming language for the CS system, in
-which users both write the code running on individual Processing Elements (PE), and specify the
-placement of programs and routing of data on the WSE. CSL provides libraries for several common
-primitive operations, such as broadcasts, gathers, and scatters across rows or columns of PEs.
+---
 
-Because iterative development and debugging is crucial in the kernel writing process, Cerebras
-provides a simulator workflow for compiling and running programs. This is provided via a
-Singularity container, which users can run natively on any x86 computer, or an ARM/ Apple Silicon
-computer via emulation. This workflow provides scripts for compiling device code (`cslc`) and
-running the Python host code (`cs_python`) to drive a cycle-accurate simulation of the Wafer-Scale
-Engine (WSE).
+## 🛠️ 1. Set up the SDK
 
-Because the simulation is cycle-accurate, a user typically does not simulate an entire WSE, but a
-"subfabric," such as a 10x10 or 20x20 grid of PEs. For debugging, simulator logs are produced with
-information on instruction traces and data flow. Users can additionally visualize their programs'
-execution on the WSE with a GUI. 
+On an ALCF Cerebras login/user node, copy the SDK and put `cslc` on your `PATH`:
 
-## Installation and Setup
+```bash
+cp -r /software/cerebras/cs_sdk-2.10 ~
+export PATH=~/cs_sdk-2.10:$PATH
+```
 
-   > [!NOTE]  
-   > The following instructions are for downloading and installing the SDK on Linux.
-   > See [here](https://sdk.cerebras.net/installation-guide#apple-silicon-mac-installation)
-   > for Apple Silicon instructions.
-   > For the Argonne tutorial, the SDK is already installed at `/software/cerebras/cs_sdk-1.3.0`. Add this location
-   > to your `PATH` with `export PATH=$PATH:/software/cerebras/cs_sdk-1.3.0`.
+Verify it works:
 
-1. **Download the SDK**
+```bash
+cslc --help
+```
 
-   First, download the tarball containing the SDK singularity container and associated files by following instruciton here: [https://www.cerebras.ai/developers/sdk-request]()
-   .   
+> [!TIP]
+> Add the `export PATH=...` line to your `~/.bashrc` so `cslc` and `cs_python` are always available.
 
-2. **Setup Environment and Extract Files**
-   Set the following environment variables, pointing to the location where you want to install the
-   SDK, and where you downloaded the tarball.
+If you need to reach external resources, set the proxy:
 
-   ```
-   $ export SDK_INSTALL_PATH=/my/install/location/cs_sdk-1.3.0
-   $ export SDK_TAR_PATH=/path/to/Cerebras-SDK-1.2.0-{build id}.tar.gz
-   ```
+```bash
+export HTTPS_PROXY=http://proxy.alcf.anl.gov:3128
+export https_proxy=http://proxy.alcf.anl.gov:3128
+```
 
-   Now create the directory where you will install the Cerebras SDK, and extract the files from the
-   downloaded tarball into that directory.
+## 📥 2. Get the example programs
 
-   ```
-   $ mkdir -p $SDK_INSTALL_PATH
-   $ tar -C $SDK_INSTALL_PATH -xvf $SDK_TAR_PATH
-   ```
+The full tutorial set (gemv-00 … gemv-09, pipelines, collectives, and more):
 
-3. **Install the SDK**
-   Add the SDK to your `PATH`. You can additionally consider adding the `PATH` update command to
-   your `.bashrc`.
+```bash
+git clone https://github.com/Cerebras/csl-examples.git
+cd csl-examples
+git checkout v2.10.0
+```
 
-   ```
-   $ PATH_CMD='export PATH='$SDK_INSTALL_PATH':$PATH'
-   $ eval $PATH_CMD
-   ```
+Each tutorial is self-contained and runs on the simulator with a single script:
 
-   You can additionally consider adding the `PATH` update command to your `.bashrc`.
+```bash
+cd tutorials/gemv-01-complete-program/
+bash commands_wse3.sh          # cslc compiles, cs_python drives the fabric simulator
+```
 
-   ```
-   $ echo $PATH_CMD >> ~/.bashrc
-   ```
+> [!NOTE]
+> A single-PE GEMV (`gemv-01` … `gemv-05`) uses **zero colors** — one processor, no network.
+> **Colors only appear the moment work crosses a PE boundary.** That's exactly what the hands-on is about. 👇
 
-## Next Steps
+---
 
-For convenience, this repository contains two example programs for running the SDK simulator:
-- [Single-PE GEMV](single-pe-gemv/README.MD) performs a matrix-vector computation on a single PE,
-- and [Two-PE GEMV](two-pe-gemv/README.MD) distributes this computation between two PEs.
+## 🎨 Hands-on: GEMV on 2 PEs — wire the colors
 
-These and more example programs can be found on ALCF at
-`/software/cerebras/cs_sdk-1.3.0/csl-extras-202406260214-4-70afe120/examples`.
-Copy these to your home directory to run them.
+![Difficulty](https://img.shields.io/badge/difficulty-beginner-brightgreen)
+![Time](https://img.shields.io/badge/time-~30%20min-informational)
+![Concept](https://img.shields.io/badge/concept-colors%20%26%20routing-e91e63)
 
-## More Information
+📂 Files for this exercise are in **[`two-pe-gemv/`](./two-pe-gemv/)** (`starter/` = your task, `solution/` = answer key).
 
-For more information, visit our
-[Cerebras SDK documentation](https://sdk.cerebras.net/).
+### The problem
 
-See more example programs in our [examples GitHub repo](https://github.com/Cerebras/csl-examples).
+Compute `y = A·x + b` where `A` is `4×6`. We split `A` by **columns** across two PEs: each computes
+half of `A·x`, and the **left PE sends its partial result to the right PE**, which adds it in. That
+single hand-off is the whole lesson. 🎯
+
+```mermaid
+flowchart LR
+    H1["🖥️ host<br/>A, x, b"] -. load .-> L
+    subgraph L["🟦 PE (0,0) — LEFT"]
+        LC["y_L = A[:,0:3]·x"]
+    end
+    subgraph R["🟩 PE (1,0) — RIGHT"]
+        RC["y = A[:,3:6]·x + y_L + b"]
+    end
+    L == "send_color 🎨" ==> R
+    R -. read y .-> H2["🖥️ host<br/>final y"]
+```
+
+### 🎨 Colors in 60 seconds
+
+> [!IMPORTANT]
+> A **color** is a hardware **routing channel** — a wire threaded through the PEs. To make a value
+> travel, each PE gives that color a **route** with two parts:
+> - **`.rx`** — where a wavelet **comes in from**
+> - **`.tx`** — where it **goes out to**
+>
+> Directions are **`RAMP`** (in/out of *this* PE's compute core) and the compass **`EAST` / `WEST` /
+> `NORTH` / `SOUTH`** (to a neighbor). **Same color, different route on each PE.**
+
+This program declares exactly **one** color:
+
+```csl
+const send_color: color = @get_color(0);   // one channel carries y_L from LEFT → RIGHT
+```
+
+### ✅ Your task
+
+**Everything is already written** — `pe_program.csl` (the compute), `run.py` (the host), the PE
+placement — **except the color routes.** Open [`two-pe-gemv/starter/layout.csl`](./two-pe-gemv/starter/layout.csl)
+and find the two `EXERCISE` blocks. Fill in the `???` for each PE's route on `send_color`, choosing
+from `RAMP, EAST, WEST, NORTH, SOUTH`:
+
+```csl
+// Left PE (0,0) — sends its partial result y_L toward the EAST neighbor
+@set_color_config(0, 0, send_color, .{.routes = .{ .rx = .{ ??? }, .tx = .{ ??? } }});
+
+// Right PE (1,0) — receives from the WEST, delivers into its own compute core
+@set_color_config(1, 0, send_color, .{.routes = .{ .rx = .{ ??? }, .tx = .{ ??? } }});
+```
+
+| PE | role | `.rx = .{ ? }` | `.tx = .{ ? }` |
+|----|------|:---:|:---:|
+| `(0,0)` LEFT  | **send** `y_L` to the east neighbor | ❓ | ❓ |
+| `(1,0)` RIGHT | **receive** from the west, deliver to core | ❓ | ❓ |
+
+> [!TIP]
+> Think of it as one wire: the left PE's value **leaves its core (`RAMP`) heading `EAST`**; the right
+> PE **takes it off the `WEST` link into its core (`RAMP`)**. One color, two complementary routes.
+
+### ▶️ Compile and run on the simulator
+
+```bash
+cd two-pe-gemv/starter
+bash commands_wse3.sh
+```
+
+This runs `cslc` (compile) then `cs_python run.py` (fabric simulation) and prints **`SUCCESS!`** when
+your routing is correct.
+
+### 🚦 What you'll see
+
+| Signal | Meaning | Fix |
+|---|---|---|
+| ❌ won't compile | a `???` is still there | fill in all four routes |
+| ⏳ hangs forever | routes don't line up (e.g. both PEs "send") | the right PE waits for data that never arrives — recheck directions |
+| ✅ `SUCCESS!` | the color routes `y_L` correctly | 🎉 you wired your first fabric color |
+
+<details>
+<summary>🔑 Stuck? Reveal the answer key</summary>
+
+| PE | `.rx` | `.tx` |
+|----|:---:|:---:|
+| `(0,0)` LEFT  | `RAMP` | `EAST` |
+| `(1,0)` RIGHT | `WEST` | `RAMP` |
+
+```csl
+@set_color_config(0, 0, send_color, .{.routes = .{ .rx = .{RAMP}, .tx = .{EAST} }});
+@set_color_config(1, 0, send_color, .{.routes = .{ .rx = .{WEST}, .tx = .{RAMP} }});
+```
+
+Full working program in [`two-pe-gemv/solution/`](./two-pe-gemv/solution/).
+</details>
+
+### 🧠 Takeaway
+
+- **1 PE → 0 colors.** Cross a PE boundary → you need a color.
+- A color is **one channel**; each PE gives it a **route** (`.rx`/`.tx`). Sender does `RAMP → EAST`,
+  receiver does `WEST → RAMP`.
+- **Scaling up:** a 2×2 GEMV tile needs **2** colors (one to broadcast, one to reduce); Conway's Game
+  of Life needs **8**. Same idea, more wires. 🧵
+
+---
+
+## 📚 More information
+
+- [ALCF Cerebras CSL guide](https://github.com/argonne-lcf/user-guides/blob/main/docs/ai-testbed/cerebras/csl.md)
+- [Cerebras SDK documentation](https://sdk.cerebras.net/)
+- [CSL examples repository](https://github.com/Cerebras/csl-examples)
+
+[⬅️ Back to Cerebras overview](../README.md)
