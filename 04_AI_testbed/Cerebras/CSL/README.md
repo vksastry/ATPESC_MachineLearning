@@ -22,8 +22,7 @@ kernels in **CSL** (Cerebras Software Language), programming individual PEs and 
 
 ```mermaid
 flowchart LR
-    A["🛠️ Set up the SDK<br/>(cslc on PATH)"] --> B["📥 Get the examples"]
-    B --> C["🎨 Hands-on: 2-PE GEMV<br/>wire the missing colors"]
+    A["🛠️ Set up the SDK<br/>(cslc on PATH)"] --> C["🎨 Hands-on: 2-PE GEMV<br/>wire the missing colors"]
     C --> D["▶️ Compile + simulate<br/>bash commands_wse3.sh"]
     D --> E["✅ SUCCESS!"]
     classDef good fill:#e3f9e5,stroke:#00aa00,color:#006600
@@ -32,7 +31,7 @@ flowchart LR
 
 ---
 
-## 🛠️ 1. Set up the SDK
+## 🛠️ Set up the SDK
 
 On an ALCF Cerebras login/user node, copy the SDK and put `cslc` on your `PATH`:
 
@@ -50,33 +49,10 @@ cslc --help
 > [!TIP]
 > Add the `export PATH=...` line to your `~/.bashrc` so `cslc` and `cs_python` are always available.
 
-If you need to reach external resources, set the proxy:
-
-```bash
-export HTTPS_PROXY=http://proxy.alcf.anl.gov:3128
-export https_proxy=http://proxy.alcf.anl.gov:3128
-```
-
-## 📥 2. Get the example programs
-
-The full tutorial set (gemv-00 … gemv-09, pipelines, collectives, and more):
-
-```bash
-git clone https://github.com/Cerebras/csl-examples.git
-cd csl-examples
-git checkout v2.10.0
-```
-
-Each tutorial is self-contained and runs on the simulator with a single script:
-
-```bash
-cd tutorials/gemv-01-complete-program/
-bash commands_wse3.sh          # cslc compiles, cs_python drives the fabric simulator
-```
-
 > [!NOTE]
-> A single-PE GEMV (`gemv-01` … `gemv-05`) uses **zero colors** — one processor, no network.
-> **Colors only appear the moment work crosses a PE boundary.** That's exactly what the hands-on is about. 👇
+> Everything for the hands-on is **already in this repo** — no cloning needed.
+> A **single-PE** GEMV uses **zero colors** (one processor, no network); **colors only appear the
+> moment work crosses a PE boundary** — which is exactly what you'll wire below. 👇
 
 ---
 
