@@ -18,6 +18,58 @@ kernels in **CSL** (Cerebras Software Language), programming individual PEs and 
 
 ---
 
+## 🏗️ How the wafer is organized
+
+The WSE is a **2D rectangular mesh of Processing Elements (PEs)** — hundreds of thousands of them
+(≈900,000 on the WSE-3) on a single wafer. Each PE is a tiny, independent computer that talks **only to
+its four neighbors**: North, East, South, West. **There is no shared memory anywhere on the wafer.**
+
+```
+┌────┬────┬────┐
+│ PE │ PE │ PE │    every PE connects only to its
+├────┼────┼────┤    N / E / S / W neighbors — data
+│ PE │ PE │ PE │    reaches a far PE by hopping
+├────┼────┼────┤    across the ones in between
+│ PE │ PE │ PE │
+└────┴────┴────┘
+```
+
+**Inside one PE** there are three parts:
+
+```mermaid
+flowchart LR
+    subgraph PE["🔲 One PE"]
+      direction TB
+      CE["🧮 Compute Engine (CE)<br/>+ 💾 ~48 KB local memory<br/>(private — no other PE can read it)"]
+      R{{"🔀 Router"}}
+      CE <-->|"RAMP link"| R
+    end
+    N["⬆️ NORTH"] <--> R
+    W["⬅️ WEST"] <--> R
+    R <--> E["➡️ EAST"]
+    R <--> S["⬇️ SOUTH"]
+```
+
+- **🧮 Compute Engine (CE)** — runs your CSL instructions.
+- **💾 Local memory** — ~48 KB of SRAM holding this PE's data *and* code; no other PE can touch it.
+- **🔀 Router** — the PE's only link to the outside world. It connects to the four neighbor routers,
+  and to its *own* CE through the **`RAMP`** link.
+
+PEs communicate by sending **wavelets** — 32-bit messages that hop to a neighbor in a **single clock
+cycle**. Every wavelet is tagged with a **color** (one of 24 channels, IDs 0–23). That color does two
+jobs at once: it **decides the wavelet's route** through the mesh **and** **which task consumes it** on
+arrival.
+
+> [!IMPORTANT]
+> **Writing CSL mirrors this hardware in two steps:**
+> 1. **Place** your program on a rectangle of PEs — `@set_rectangle`, `@set_tile_code`.
+> 2. **Route** the colors — for each color on each PE, say where wavelets enter (`.rx`) and exit
+>    (`.tx`), using `RAMP` (its own CE) and the compass `EAST / WEST / NORTH / SOUTH` (neighbors).
+>
+> The hands-on below is exactly **step 2**: the placement is done for you — **you wire the color.** 🎨
+
+---
+
 ## 🧭 What you'll do
 
 ```mermaid
