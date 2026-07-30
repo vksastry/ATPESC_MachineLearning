@@ -1,7 +1,6 @@
 # Cerebras Hands-On Session 
 
-The Cerebras hands-on session is divided into three parts. 
+The Cerebras hands-on session is divided into two parts. 
 
-* [Training on CS-2 at ALCF](./training/README.md)
-* [Inference on CS-3 in Cloud](./inference/README.MD)
-* [Cerebras HPC SDK](./sdk/README.MD)
+* [Training on CS-3](./ML_Training/README.md)
+* [SDK on CS-3](./CSL/README.md)
