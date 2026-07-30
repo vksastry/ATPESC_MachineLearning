@@ -38,17 +38,26 @@ its four neighbors**: North, East, South, West. **There is no shared memory anyw
 
 ```mermaid
 flowchart TB
-    N(["⬆️ NORTH neighbor"])
-    subgraph fabric[" "]
+    N(["⬆️ NORTH"])
+    subgraph row[" "]
       direction LR
-      W(["⬅️ WEST neighbor"]) <--> R{{"🔀 Router"}} <--> E(["➡️ EAST neighbor"])
+      W(["⬅️ WEST"])
+      subgraph PE["🔲 One PE"]
+        direction TB
+        R{{"🔀 Router"}}
+        CE["🧮 Compute Engine (CE)"]
+        MEM["💾 Local memory<br/>~48 KB SRAM"]
+        R <-->|"RAMP"| CE
+        CE <--> MEM
+      end
+      E(["➡️ EAST"])
+      W <--> R
+      R <--> E
     end
-    S(["⬇️ SOUTH neighbor"])
+    S(["⬇️ SOUTH"])
     N <--> R
     R <--> S
-    R <-->|"RAMP"| CE["🧮 Compute Engine (CE)"]
-    CE <--> MEM["💾 Local memory<br/>~48 KB SRAM · private"]
-    style fabric fill:transparent,stroke:transparent
+    style row fill:transparent,stroke:transparent
     classDef router fill:#e8e0ff,stroke:#6b46c1,color:#3c1a78
     classDef ce fill:#dcefff,stroke:#1d6fb8,color:#0b3d66
     classDef mem fill:#fff3d6,stroke:#e0a000,color:#7a5a00
