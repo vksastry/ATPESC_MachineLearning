@@ -41,22 +41,12 @@ flowchart TB
     N(["⬆️ NORTH"])
     subgraph row[" "]
       direction LR
-      W(["⬅️ WEST"])
-      subgraph PE["🔲 One PE"]
-        direction TB
-        R{{"🔀 Router"}}
-        CE["🧮 Compute Engine (CE)"]
-        MEM["💾 Local memory<br/>~48 KB SRAM"]
-        R <-->|"RAMP"| CE
-        CE <--> MEM
-      end
-      E(["➡️ EAST"])
-      W <--> R
-      R <--> E
+      W(["⬅️ WEST"]) <--> R{{"🔀 Router"}} <--> E(["➡️ EAST"])
     end
-    S(["⬇️ SOUTH"])
     N <--> R
-    R <--> S
+    R <--> S(["⬇️ SOUTH"])
+    R <-->|"RAMP"| CE["🧮 Compute Engine (CE)"]
+    CE <--> MEM["💾 Local memory · ~48 KB SRAM"]
     style row fill:transparent,stroke:transparent
     classDef router fill:#e8e0ff,stroke:#6b46c1,color:#3c1a78
     classDef ce fill:#dcefff,stroke:#1d6fb8,color:#0b3d66
