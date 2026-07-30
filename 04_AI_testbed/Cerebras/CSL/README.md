@@ -36,27 +36,10 @@ its four neighbors**: North, East, South, West. **There is no shared memory anyw
 
 **Inside one PE** there are three parts:
 
-```mermaid
-flowchart TB
-    N(["⬆️ NORTH"])
-    subgraph row[" "]
-      direction LR
-      W(["⬅️ WEST"]) <--> R{{"🔀 Router"}} <--> E(["➡️ EAST"])
-    end
-    N <--> R
-    R <--> S(["⬇️ SOUTH"])
-    R <-->|"RAMP"| CE["🧮 Compute Engine (CE)"]
-    CE <--> MEM["💾 Local memory · ~48 KB SRAM"]
-    style row fill:transparent,stroke:transparent
-    classDef router fill:#e8e0ff,stroke:#6b46c1,color:#3c1a78
-    classDef ce fill:#dcefff,stroke:#1d6fb8,color:#0b3d66
-    classDef mem fill:#fff3d6,stroke:#e0a000,color:#7a5a00
-    classDef nbr fill:#eef1f5,stroke:#9aa5b1,color:#3a4756
-    class R router
-    class CE ce
-    class MEM mem
-    class N,S,W,E nbr
-```
+<p align="center">
+  <img src="./pe-diagram.svg" width="520"
+       alt="One PE containing a Router, a Compute Engine, and local memory, with NORTH/SOUTH/EAST/WEST fabric links to neighbor PEs">
+</p>
 
 - **🧮 Compute Engine (CE)** — runs your CSL instructions.
 - **💾 Local memory** — ~48 KB of SRAM holding this PE's data *and* code; no other PE can touch it.
