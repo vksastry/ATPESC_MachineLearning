@@ -132,7 +132,11 @@ Two phases, and **two colors**:
 - **`x_color` broadcasts `x` SOUTH**, so both PEs in a column can multiply their quadrant.
 - **`ax_color` reduces the partial results EAST**, adding left + right into the final `y`.
 
-> 🎬 Want to watch it happen? An [**interactive dataflow animation**](https://claude.ai/code/artifact/c62a8928-3b26-48c0-b930-36287f7d7bdf) steps through host → broadcast → multiply → reduce → readback with the real numbers.
+> 🧮 **See it interactively** (live, hosted from this repo via GitHub Pages):
+> - ▶ [**A / x / b placement & computation**](https://vksastry.github.io/ATPESC_MachineLearning/04_AI_testbed/Cerebras/CSL/gemv-2x2/placement-and-compute.html) — pick a PE, watch it stream `x` and build its partial
+> - ▶ [**Dataflow animation**](https://vksastry.github.io/ATPESC_MachineLearning/04_AI_testbed/Cerebras/CSL/gemv-2x2/dataflow-viz.html) — host → broadcast → multiply → reduce → readback
+>
+> *(No Pages? Just open the `.html` files in [`gemv-2x2/`](./gemv-2x2/) in any browser.)*
 
 ### 🎨 The two colors
 
