@@ -24,15 +24,12 @@ The WSE is a **2D rectangular mesh of Processing Elements (PEs)** — hundreds o
 (≈900,000 on the WSE-3) on a single wafer. Each PE is a tiny, independent computer that talks **only to
 its four neighbors**: North, East, South, West. **There is no shared memory anywhere on the wafer.**
 
-```
-┌────┬────┬────┐
-│ PE │ PE │ PE │    every PE connects only to its
-├────┼────┼────┤    N / E / S / W neighbors — data
-│ PE │ PE │ PE │    reaches a far PE by hopping
-├────┼────┼────┤    across the ones in between
-│ PE │ PE │ PE │
-└────┴────┴────┘
-```
+<p align="center">
+  <img src="./pe-mesh.svg" width="300"
+       alt="A 3x3 mesh of PEs: the center PE is highlighted in one color, its four N/E/S/W neighbors are each a different color, and the corner PEs are grey.">
+</p>
+
+<p align="center"><em>A PE talks only to its four <b>N / E / S / W</b> neighbors — a far PE is reached by hopping across the ones in between.</em></p>
 
 **Inside one PE** there are three parts:
 

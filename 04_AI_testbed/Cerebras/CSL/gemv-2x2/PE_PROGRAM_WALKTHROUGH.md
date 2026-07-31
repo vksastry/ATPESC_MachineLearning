@@ -1,6 +1,6 @@
 # `pe_program.csl` — A Line-by-Line Walkthrough for C Programmers
 
-This is the **per-PE program** for `gemv-07-routes-2`. The *same* source
+This is the **per-PE program** for the **2×2 GEMV** hands-on. The *same* source
 compiles onto **all four PEs** in a 2×2 grid, and each copy figures out its
 own role at runtime from its coordinates. Together they compute
 
