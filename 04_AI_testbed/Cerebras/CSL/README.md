@@ -205,10 +205,14 @@ This runs `cslc` (compile) then `cs_python run.py` (fabric simulation). Correct 
 
 ### 🧠 Takeaway
 
-- **1 PE → 0 colors.** Cross a PE boundary → you need a color.
-- This tile uses **2 colors with opposite jobs**: a **broadcast** (`x_color`, fanning out via
-  `.{ RAMP, SOUTH }`) and a **reduce** (`ax_color`, `RAMP → EAST` / `WEST → RAMP`).
-- **Scaling up:** Conway's Game of Life needs **8** colors. Same idea, more wires. 🧵
+- A **color is a channel**, and each PE gives it its own **route**. The *same* color is a **send** on
+  one PE (`RAMP → EAST`) and a **receive** on its neighbor (`WEST → RAMP`) — that's how a value crosses
+  from one PE to the next.
+- A `.tx` can list **more than one destination**: `.{ RAMP, SOUTH }` hands the value to the PE's own
+  core *and* forwards it to the neighbor below — that's how one color **broadcasts**.
+- You wired **two colors with opposite jobs** — `x_color` fans data *out* (broadcast), `ax_color`
+  funnels it *in* (reduce) — entirely as **routing in `layout.csl`**. The compute in `pe_program.csl`
+  is identical on every PE; only the routes differ.
 
 ---
 
