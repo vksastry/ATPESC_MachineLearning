@@ -1,3 +1,10 @@
+<!--
+  MAINTAINER — before merging to upstream (argonne-lcf/ATPESC_MachineLearning),
+  swap the two fork-specific strings in this file (check with:  grep -n vksastry README.md):
+    1. clone URL:  vksastry/ATPESC_MachineLearning   ->  argonne-lcf/ATPESC_MachineLearning
+    2. Pages URLs: vksastry.github.io                ->  argonne-lcf.github.io
+       (the interactive viz links also require GitHub Pages to be enabled on the upstream repo)
+-->
 # 🎨 Cerebras SDK & CSL — Programming the Wafer
 
 ![Testbed](https://img.shields.io/badge/ALCF-AI%20Testbed-0aa)
@@ -103,8 +110,18 @@ export PATH=~/ATPESC/cs_sdk-2.10:$PATH
 cslc --help
 ```
 
+**5. Clone this repo** onto the node to get the hands-on files (the ALCF proxy is needed for external git):
+
+```bash
+export HTTPS_PROXY=http://proxy.alcf.anl.gov:3128
+export https_proxy=http://proxy.alcf.anl.gov:3128
+cd ~/ATPESC
+# NOTE: development fork — on merge, swap to https://github.com/argonne-lcf/ATPESC_MachineLearning.git
+git clone https://github.com/vksastry/ATPESC_MachineLearning.git
+cd ATPESC_MachineLearning/04_AI_testbed/Cerebras/CSL
+```
+
 > [!NOTE]
-> Everything for the hands-on is **already in this repo** — no cloning needed.
 > A **single-PE** GEMV uses **zero colors** (one processor, no network); **colors only appear the
 > moment work crosses a PE boundary** — which is exactly what you'll wire below. 👇
 
