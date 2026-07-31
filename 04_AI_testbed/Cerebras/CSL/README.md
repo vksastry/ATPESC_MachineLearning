@@ -1,9 +1,7 @@
 <!--
-  MAINTAINER — before merging to upstream (argonne-lcf/ATPESC_MachineLearning),
-  swap the two fork-specific strings in this file (check with:  grep -n vksastry README.md):
-    1. clone URL:  vksastry/ATPESC_MachineLearning   ->  argonne-lcf/ATPESC_MachineLearning
-    2. Pages URLs: vksastry.github.io                ->  argonne-lcf.github.io
-       (the interactive viz links also require GitHub Pages to be enabled on the upstream repo)
+  MAINTAINER — before merging to upstream, swap the clone URL in this file
+  (check with:  grep -n vksastry README.md):
+    vksastry/ATPESC_MachineLearning  ->  argonne-lcf/ATPESC_MachineLearning
 -->
 # 🎨 Cerebras SDK & CSL — Programming the Wafer
 
@@ -142,32 +140,14 @@ Compute `y = A·x + b` where `A` is `4×6`, spread across a **2×2 grid of PEs**
 **quadrants** (one per PE), `x` is handed to the **top row**, and `b` is staged in the **left column**.
 The final `y` lands in the **right column**, where the host reads it back.
 
-```
-        x[0:3]                    x[3:6]         <- host loads x into the TOP ROW only
-           |                         |
-     +-----v------+   ax_color   +-----v------+
- b ->| PE(0,0) NW | -- reduce -> | PE(1,0) NE | -> y[0:2]   (rows 0-1)
-     |  y += A·x  |    EAST      |  + partial |
-     +-----+------+              +-----+------+
-  x_color  | SOUTH           x_color  | SOUTH
-     +-----v------+   ax_color   +-----v------+
- b ->| PE(0,1) SW | -- reduce -> | PE(1,1) SE | -> y[2:4]   (rows 2-3)
-     |  y += A·x  |    EAST      |  + partial |
-     +------------+              +------------+
+<p align="center">
+  <img src="./gemv-2x2-dataflow.svg" width="580"
+       alt="2x2 grid of PEs: x enters the top row and is broadcast south via x_color; b is staged in the left column; each PE computes y += A·x on its quadrant; partial results reduce east via ax_color, so the final y lands in the right column.">
+</p>
 
-  x_color  = BROADCAST  x  down SOUTH   (top row feeds the bottom row)
-  ax_color = REDUCE     y  toward EAST  (left column sums into the right column)
-```
+<p align="center"><em><code>x</code> enters the top row and is broadcast <b>south</b>; each PE multiplies its own quadrant; partials reduce <b>east</b> into the final <code>y</code> on the right.</em></p>
 
-Two phases, and **two colors**:
-- **`x_color` broadcasts `x` SOUTH**, so both PEs in a column can multiply their quadrant.
-- **`ax_color` reduces the partial results EAST**, adding left + right into the final `y`.
-
-> 🧮 **See it interactively** (live, hosted from this repo via GitHub Pages):
-> - ▶ [**A / x / b placement & computation**](https://vksastry.github.io/ATPESC_MachineLearning/04_AI_testbed/Cerebras/CSL/gemv-2x2/placement-and-compute.html) — pick a PE, watch it stream `x` and build its partial
-> - ▶ [**Dataflow animation**](https://vksastry.github.io/ATPESC_MachineLearning/04_AI_testbed/Cerebras/CSL/gemv-2x2/dataflow-viz.html) — host → broadcast → multiply → reduce → readback
->
-> *(No Pages? Just open the `.html` files in [`gemv-2x2/`](./gemv-2x2/) in any browser.)*
+*Prefer to watch it move? Open `placement-and-compute.html` or `dataflow-viz.html` from [`gemv-2x2/`](./gemv-2x2/) in a browser — handy on the projector.*
 
 ### 🎨 The two colors
 
