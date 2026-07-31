@@ -73,21 +73,35 @@ flowchart LR
 
 ## 🛠️ Set up the SDK
 
-On an ALCF Cerebras login/user node, copy the SDK and put `cslc` on your `PATH`:
+> [!IMPORTANT]
+> CSL runs on a **Cerebras user node**, not the login node — `cslc` uses a **Singularity** container
+> that only exists there. On the login node you'll hit `[ERROR] singularity not in $PATH`.
+
+**1. Connect** — log in, then hop to a user node:
 
 ```bash
-cp -r /software/cerebras/cs_sdk-2.10 ~
-export PATH=~/cs_sdk-2.10:$PATH
+ssh ALCFUserID@cerebras.alcf.anl.gov   # login node
+ssh cer-usn-01                         # user node   (or: ssh cer-usn-02)
 ```
 
-Verify it works:
+**2. Copy the SDK** into `~/ATPESC` (just once — your home directory is shared across nodes):
+
+```bash
+mkdir -p ~/ATPESC
+cp -r /software/cerebras/cs_sdk-2.10 ~/ATPESC/
+```
+
+**3. Put `cslc` on your `PATH`** (each new shell needs this — add it to `~/.bashrc` to make it stick):
+
+```bash
+export PATH=~/ATPESC/cs_sdk-2.10:$PATH
+```
+
+**4. Verify** (on the user node):
 
 ```bash
 cslc --help
 ```
-
-> [!TIP]
-> Add the `export PATH=...` line to your `~/.bashrc` so `cslc` and `cs_python` are always available.
 
 > [!NOTE]
 > Everything for the hands-on is **already in this repo** — no cloning needed.
