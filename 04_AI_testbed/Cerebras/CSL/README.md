@@ -105,12 +105,12 @@ cslc --help
 ![Time](https://img.shields.io/badge/time-~30%20min-informational)
 ![Concept](https://img.shields.io/badge/concept-2%20colors%20%C2%B7%20broadcast%20%2B%20reduce-e91e63)
 
-📂 Files: **[`gemv-2x2/`](./gemv-2x2/)** — `starter/` = your task, `solution/` = answer key.
+📂 Files: **[`gemv-2x2/starter/`](./gemv-2x2/starter/)** — everything you need is here; you only edit `layout.csl`.
 📖 Optional deep dive: **[`PE_PROGRAM_WALKTHROUGH.md`](./gemv-2x2/PE_PROGRAM_WALKTHROUGH.md)** — the device code, line by line.
 
 ### The problem
 
-Compute `y = A·x + b` where `A` is `4×6`, now spread across a **2×2 grid**. `A` splits into four
+Compute `y = A·x + b` where `A` is `4×6`, spread across a **2×2 grid of PEs**. `A` splits into four
 **quadrants** (one per PE), `x` is handed to the **top row**, and `b` is staged in the **left column**.
 The final `y` lands in the **right column**, where the host reads it back.
 
@@ -131,7 +131,7 @@ The final `y` lands in the **right column**, where the host reads it back.
   ax_color = REDUCE     y  toward EAST  (left column sums into the right column)
 ```
 
-Two phases, and this time **two colors**:
+Two phases, and **two colors**:
 - **`x_color` broadcasts `x` SOUTH**, so both PEs in a column can multiply their quadrant.
 - **`ax_color` reduces the partial results EAST**, adding left + right into the final `y`.
 
@@ -192,20 +192,15 @@ This runs `cslc` (compile) then `cs_python run.py` (fabric simulation). Correct 
 | ✅ `SUCCESS!` | both colors route correctly | 🎉 you wired a broadcast **and** a reduce |
 
 <details>
-<summary>🔑 Stuck? Reveal the answer key</summary>
+<summary>💡 Stuck? Reveal a hint (not the full answer)</summary>
 
-| PE | color | `.rx` | `.tx` |
-|----|-------|:---:|:---:|
-| `(0,0)` NW | `ax_color` | `RAMP`  | `EAST` |
-| `(0,0)` NW | `x_color`  | `RAMP`  | `RAMP, SOUTH` |
-| `(1,0)` NE | `ax_color` | `WEST`  | `RAMP` |
-| `(1,0)` NE | `x_color`  | `RAMP`  | `RAMP, SOUTH` |
-| `(0,1)` SW | `ax_color` | `RAMP`  | `EAST` |
-| `(0,1)` SW | `x_color`  | `NORTH` | `RAMP` |
-| `(1,1)` SE | `ax_color` | `WEST`  | `RAMP` |
-| `(1,1)` SE | `x_color`  | `NORTH` | `RAMP` |
+You don't need the whole answer — every route is one of just **three patterns**:
 
-Full working program in [`gemv-2x2/solution/`](./gemv-2x2/solution/).
+- **Sender** — pushes data from its core onto a link: `.rx = .{RAMP}`, `.tx = .{ <direction> }`
+- **Receiver** — pulls data off a link into its core: `.rx = .{ <direction> }`, `.tx = .{RAMP}`
+- **Broadcast originator** (top-row `x_color` only) — does both at once: `.rx = .{RAMP}`, `.tx = .{RAMP, SOUTH}`
+
+For each of the 8 routes, ask: *is this PE **sending** or **receiving** on this color, and which way does that color flow?* Remember **`ax_color` flows EAST** (left column → right) and **`x_color` flows SOUTH** (top row → bottom).
 </details>
 
 ### 🧠 Takeaway
