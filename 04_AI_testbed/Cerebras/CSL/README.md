@@ -203,18 +203,6 @@ This runs `cslc` (compile) then `cs_python run.py` (fabric simulation). Correct 
 | ⏳ hangs forever | a route doesn't line up | e.g. a top-row `x_color` missing `RAMP` → that PE never receives its own `x`, never finishes, and the reduce deadlocks. Recheck directions. |
 | ✅ `SUCCESS!` | both colors route correctly | 🎉 you wired a broadcast **and** a reduce |
 
-<details>
-<summary>💡 Stuck? Reveal a hint (not the full answer)</summary>
-
-You don't need the whole answer — every route is one of just **three patterns**:
-
-- **Sender** — pushes data from its core onto a link: `.rx = .{RAMP}`, `.tx = .{ <direction> }`
-- **Receiver** — pulls data off a link into its core: `.rx = .{ <direction> }`, `.tx = .{RAMP}`
-- **Broadcast originator** (top-row `x_color` only) — does both at once: `.rx = .{RAMP}`, `.tx = .{RAMP, SOUTH}`
-
-For each of the 8 routes, ask: *is this PE **sending** or **receiving** on this color, and which way does that color flow?* Remember **`ax_color` flows EAST** (left column → right) and **`x_color` flows SOUTH** (top row → bottom).
-</details>
-
 ### 🧠 Takeaway
 
 - **1 PE → 0 colors.** Cross a PE boundary → you need a color.
