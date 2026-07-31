@@ -74,8 +74,8 @@ flowchart LR
 ## 🛠️ Set up the SDK
 
 > [!IMPORTANT]
-> CSL runs on a **Cerebras user node**, not the login node — `cslc` uses a **Singularity** container
-> that only exists there. On the login node you'll hit `[ERROR] singularity not in $PATH`.
+> CSL runs on a **Cerebras compute node**, not the login node — `cslc` uses a **Singularity** container
+> that exists only on the compute node.  
 
 **1. Connect** — log in, then hop to a user node:
 
@@ -84,14 +84,14 @@ ssh ALCFUserID@cerebras.alcf.anl.gov   # login node
 ssh cer-usn-01                         # user node   (or: ssh cer-usn-02)
 ```
 
-**2. Copy the SDK** into `~/ATPESC` (just once — your home directory is shared across nodes):
+**2. Copy the SDK** into `~/ATPESC` 
 
 ```bash
 mkdir -p ~/ATPESC
 cp -r /software/cerebras/cs_sdk-2.10 ~/ATPESC/
 ```
 
-**3. Put `cslc` on your `PATH`** (each new shell needs this — add it to `~/.bashrc` to make it stick):
+**3. Put `cslc` on your `PATH`** 
 
 ```bash
 export PATH=~/ATPESC/cs_sdk-2.10:$PATH
