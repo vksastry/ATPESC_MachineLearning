@@ -89,6 +89,10 @@ runner.memcpy_d2h(y_result, y_symbol, 1, 0, 1, 2, M_per_PE, streaming=False,
 # Stop the program
 runner.stop()
 
+# Show the computed result next to what we expect
+print("expected  y = A@x + b :", y_expected)
+print("device    y          :", y_result)
+
 # Ensure that the result matches our expectation
 np.testing.assert_allclose(y_result, y_expected)
 print("SUCCESS!")

@@ -43,53 +43,34 @@ layout {
   }
 
   // =========================================================================
-  // EXERCISE: wire the 8 routes below. There are two colors:
-  //   ax_color (id 0) -- REDUCE:    partial y flows EAST (left col -> right col)
-  //   x_color  (id 1) -- BROADCAST: x flows SOUTH (top row -> bottom row)
-  // For each route choose from RAMP, EAST, WEST, NORTH, SOUTH.
-  // RAMP = into/out of this PE's own compute core. Compass = to a neighbor.
-  // Fill in every .rx = .{ ??? } and .tx = .{ ??? }.
+  // EXERCISE: wire the 8 color routes below.  Two colors are in play:
+  //   ax_color (id 0) -- the REDUCE:    partial results flow  LEFT column -> RIGHT column
+  //   x_color  (id 1) -- the BROADCAST: x flows               TOP row    -> BOTTOM row
+  //
+  // Fill in each .rx (where a wavelet comes IN) and .tx (where it goes OUT),
+  // choosing from:  RAMP, EAST, WEST, NORTH, SOUTH.
+  //   RAMP   = this PE's own compute core
+  //   compass = a neighbor PE
+  // A .tx may send to more than one place at once (list several directions).
+  //
+  // For each PE, reason from its position: on this color, is this PE a SENDER
+  // or a RECEIVER, and which way does the data travel?
   // =========================================================================
 
-  // ----- Top left PE (0, 0) : NW quadrant -----
-
-  // EXERCISE: ax_color REDUCE, left column => this PE SENDS its partial y.
-  // Its value leaves its own core (RAMP) and heads toward the EAST neighbor.
+  // ----- PE (0, 0): left column, top row -----
   @set_color_config(0, 0, ax_color, .{.routes = .{ .rx = .{ ??? }, .tx = .{ ??? } }});
-
-  // EXERCISE: x_color BROADCAST, top row => this PE ORIGINATES x.
-  // It streams x out of its core (RAMP), delivers a copy back to its own core,
-  // AND forwards it to the SOUTH neighbor. (Two tx destinations.)
   @set_color_config(0, 0, x_color,  .{.routes = .{ .rx = .{ ??? }, .tx = .{ ??? } }});
 
-  // ----- Top right PE (1, 0) : NE quadrant -----
-
-  // EXERCISE: ax_color REDUCE, right column => this PE RECEIVES the partial y.
-  // It arrives on the WEST link and drops into this PE's core (RAMP).
+  // ----- PE (1, 0): right column, top row -----
   @set_color_config(1, 0, ax_color, .{.routes = .{ .rx = .{ ??? }, .tx = .{ ??? } }});
-
-  // EXERCISE: x_color BROADCAST, top row => this PE ORIGINATES its own x.
-  // Same pattern as PE (0,0): out of core, copy to core, forward SOUTH.
   @set_color_config(1, 0, x_color,  .{.routes = .{ .rx = .{ ??? }, .tx = .{ ??? } }});
 
-  // ----- Bottom left PE (0, 1) : SW quadrant -----
-
-  // EXERCISE: ax_color REDUCE, left column => this PE SENDS its partial y EAST.
-  // Same sender pattern as PE (0,0).
+  // ----- PE (0, 1): left column, bottom row -----
   @set_color_config(0, 1, ax_color, .{.routes = .{ .rx = .{ ??? }, .tx = .{ ??? } }});
-
-  // EXERCISE: x_color BROADCAST, bottom row => this PE RECEIVES x.
-  // The x wavelets arrive from the NORTH neighbor and drop into its core (RAMP).
   @set_color_config(0, 1, x_color,  .{.routes = .{ .rx = .{ ??? }, .tx = .{ ??? } }});
 
-  // ----- Bottom right PE (1, 1) : SE quadrant -----
-
-  // EXERCISE: ax_color REDUCE, right column => this PE RECEIVES the partial y.
-  // Same receiver pattern as PE (1,0): from WEST into core.
+  // ----- PE (1, 1): right column, bottom row -----
   @set_color_config(1, 1, ax_color, .{.routes = .{ .rx = .{ ??? }, .tx = .{ ??? } }});
-
-  // EXERCISE: x_color BROADCAST, bottom row => this PE RECEIVES x.
-  // Same receiver pattern as PE (0,1): from NORTH into core.
   @set_color_config(1, 1, x_color,  .{.routes = .{ .rx = .{ ??? }, .tx = .{ ??? } }});
 
   // export symbol names
