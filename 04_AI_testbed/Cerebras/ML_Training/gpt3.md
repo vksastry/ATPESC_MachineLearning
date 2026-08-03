@@ -14,9 +14,10 @@ lesson. 🎯
 ## 📥 1. Fetch the pre-compiled artifacts
 
 ```bash
+## assuming you already have ~/ATPESC-26 directory
 mkdir ~/ATPESC-26/precompiled
 cd ~/ATPESC-26/precompiled
-cp -r /software/datasets/ATPESC .
+cp -r /software/datasets/ATPESC/* .
 cd ~/ATPESC-26/precompiled/modelzoo/src/cerebras/modelzoo/models/nlp/gpt3
 ```
 
