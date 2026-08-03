@@ -14,16 +14,16 @@ lesson. 🎯
 ## 📥 1. Fetch the pre-compiled artifacts
 
 ```bash
-mkdir ~/ATPESC-26/precompiled
-cd ~/ATPESC-26/precompiled
+mkdir ~/ATPESC/precompiled
+cd ~/ATPESC/precompiled
 cp -r /software/datasets/ATPESC .
-cd ~/ATPESC-26/precompiled/modelzoo/src/cerebras/modelzoo/models/nlp/gpt3
+cd ~/ATPESC/precompiled/modelzoo/src/cerebras/modelzoo/models/nlp/gpt3
 ```
 
 ## 🐍 2. Activate the PyTorch virtual environment
 
 ```bash
-source ~/ATPESC-26/venv_cerebras_pt/bin/activate
+source ~/ATPESC/venv_cerebras_pt/bin/activate
 ```
 
 ## 🚀 3. Launch the training job
