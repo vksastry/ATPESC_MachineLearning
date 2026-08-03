@@ -47,6 +47,7 @@ git checkout Release_2.10.0
 
 Create a PyTorch virtual environment for Cerebras
 ```bash
+cd ~/ATPESC/R_2.10.0
 /usr/bin/python3.11 -m venv venv_cerebras_pt
 source venv_cerebras_pt/bin/activate
 pip install --upgrade pip
