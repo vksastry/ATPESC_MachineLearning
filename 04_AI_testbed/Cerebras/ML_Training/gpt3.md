@@ -23,7 +23,7 @@ cd ~/ATPESC/precompiled/modelzoo/src/cerebras/modelzoo/models/nlp/gpt3
 ## 🐍 2. Activate the PyTorch virtual environment
 
 ```bash
-source ~/ATPESC/venv_cerebras_pt/bin/activate
+source ~/ATPESC/R_2.10.0/venv_cerebras_pt/bin/activate
 ```
 
 ## 🚀 3. Launch the training job
