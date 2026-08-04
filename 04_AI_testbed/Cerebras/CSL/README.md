@@ -166,24 +166,24 @@ const x_color:  color = @get_color(1); // BROADCAST: x flows SOUTH
 
 **Everything is written** — `pe_program.csl` (the compute), `run.py` (the host), the 2×2 placement —
 **except the color routes.** Open [`gemv-2x2/starter/layout.csl`](./gemv-2x2/starter/layout.csl); each of
-the **8** `@set_color_config` calls has an `EXERCISE` comment describing that PE's role. Fill every
+the **8** `@set_color_config` calls is labeled with that PE's position. Fill every
 `.rx`/`.tx` from `RAMP, EAST, WEST, NORTH, SOUTH`:
 
-| PE | color | role | `.rx` | `.tx` |
-|----|-------|------|:---:|:---:|
-| `(0,0)` NW | `ax_color` | send partial `y` east | ❓ | ❓ |
-| `(0,0)` NW | `x_color`  | originate `x` (self **+** south) | ❓ | ❓ |
-| `(1,0)` NE | `ax_color` | receive partial from west | ❓ | ❓ |
-| `(1,0)` NE | `x_color`  | originate `x` (self **+** south) | ❓ | ❓ |
-| `(0,1)` SW | `ax_color` | send partial `y` east | ❓ | ❓ |
-| `(0,1)` SW | `x_color`  | receive `x` from north | ❓ | ❓ |
-| `(1,1)` SE | `ax_color` | receive partial from west | ❓ | ❓ |
-| `(1,1)` SE | `x_color`  | receive `x` from north | ❓ | ❓ |
+| PE | position | color | `.rx` | `.tx` |
+|----|----------|-------|:---:|:---:|
+| `(0,0)` NW | left col · top row     | `ax_color` | ❓ | ❓ |
+| `(0,0)` NW | left col · top row     | `x_color`  | ❓ | ❓ |
+| `(1,0)` NE | right col · top row    | `ax_color` | ❓ | ❓ |
+| `(1,0)` NE | right col · top row    | `x_color`  | ❓ | ❓ |
+| `(0,1)` SW | left col · bottom row  | `ax_color` | ❓ | ❓ |
+| `(0,1)` SW | left col · bottom row  | `x_color`  | ❓ | ❓ |
+| `(1,1)` SE | right col · bottom row | `ax_color` | ❓ | ❓ |
+| `(1,1)` SE | right col · bottom row | `x_color`  | ❓ | ❓ |
 
 > [!TIP]
-> **The subtle one:** on the **top row**, `x_color` has **two `.tx` destinations** — `.{ RAMP, SOUTH }`.
-> `RAMP` delivers `x` back into the PE's *own* core (so it computes its quadrant), and `SOUTH` forwards
-> it to the PE below. Every other route has a single `.rx` and a single `.tx`.
+> Most routes have a single `.rx` and a single `.tx` — but **one color needs a route that delivers to
+> two places at once** (a `.tx` can list several directions). Which PEs have to both *use* a value and
+> *pass it along*?
 
 ### ▶️ Compile and run on the simulator
 
