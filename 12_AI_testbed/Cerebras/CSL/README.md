@@ -215,6 +215,16 @@ This runs `cslc` (compile) then `cs_python run.py` (fabric simulation). Correct 
 
 ---
 
+## 🏠 Homework — run it on real hardware
+
+You ran the 2×2 GEMV on the **fabric simulator**. For homework, run the *same code* on an actual
+**CS-3 wafer** — the compile-and-run flow is nearly identical, just targeted at the hardware. Follow
+the ALCF guide:
+
+👉 **[Compile and run CSL on the CS-3 hardware](https://docs.alcf.anl.gov/ai-testbed/cerebras/csl/#compile-code)**
+
+---
+
 ## 📚 More information
 
 - [ALCF Cerebras CSL guide](https://github.com/argonne-lcf/user-guides/blob/main/docs/ai-testbed/cerebras/csl.md)
